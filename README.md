@@ -1,57 +1,84 @@
-# Sample Hardhat 3 Beta Project (`mocha` and `ethers`)
+# Nocena Dual Token System
 
-This project showcases a Hardhat 3 Beta project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+A dual ERC20 token system built on Flow EVM featuring challenge rewards and time-based airdrops.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## Overview
 
-## Project Overview
+This project implements two interconnected tokens:
 
-This example project includes:
+- **Nocenite (NCT)**: Unlimited supply reward token earned through challenges
+- **Nocenix (NCX)**: Capped supply value token (1B max) distributed via weekly airdrops
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+## Token Mechanics
 
-## Usage
+### Nocenite (NCT) - Reward Token
+- **Purpose**: Challenge completion rewards
+- **Supply**: Unlimited
+- **Rewards**: 
+  - Daily challenges: 100 NCT
+  - Weekly challenges: 500 NCT  
+  - Monthly challenges: 2,500 NCT
 
-### Running Tests
+### Nocenix (NCX) - Value Token
+- **Purpose**: Time-based value distribution
+- **Supply**: 1 billion token cap
+- **Distribution**: Weekly airdrops proportional to NCT holdings
+- **Schedule**: Decreasing rewards over time
+  - Year 1: 1M NCX per week
+  - Year 2: 750K NCX per week
+  - Year 3: 500K NCX per week
+  - Year 4: 250K NCX per week
+  - Year 5+: 100K NCX per week (minimum)
 
-To run all the tests in the project, execute the following command:
+## Deployed Contracts
 
-```shell
+**Flow EVM Testnet** (Chain ID: 545)
+- Nocenite (NCT): `0x9601F4ECE8976Ac2609D852e995117d0598A78B9`
+- Nocenix (NCX): `0x784ab4827124285b062d0B63E483FAE345385D86`
+- Airdrop: `0x984514f68E946Fd8A8C877C71a763Ab44397db66`
+
+See `CONTRACT_REFERENCES.md` for complete integration details.
+
+## Development
+
+### Setup
+```bash
+npm install
+```
+
+### Testing
+```bash
 npx hardhat test
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
+### Deployment
+```bash
+# Deploy to Flow EVM testnet
+npx hardhat run scripts/deploy.ts --network flowTestnet
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
+# Run simulations locally
+npx hardhat run scripts/challengeRewards.ts
+npx hardhat run scripts/timeBasedAirdrops.ts
 ```
 
-### Make a deployment to Sepolia
-
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
-
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+### Configuration
+Set your private key for Flow EVM testnet:
+```bash
+npx hardhat keystore set FLOW_PRIVATE_KEY
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
+## Architecture
 
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
+The system incentivizes continued participation through:
+1. **Challenge Rewards**: Immediate NCT tokens for completing tasks
+2. **Proportional Airdrops**: NCX distribution based on NCT holdings percentage
+3. **Time Scarcity**: Decreasing airdrop amounts create early adopter advantages
+4. **Weekly Cadence**: Regular distribution maintains engagement
 
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
+## Integration
 
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
+For frontend integration, reference the deployed contract addresses and ABIs from:
+- Contract addresses: `CONTRACT_REFERENCES.md`
+- Contract ABIs: `artifacts/contracts/*/` folders
 
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+The system is designed for gasless transactions on Flow EVM through Flow's custom gateway.

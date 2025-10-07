@@ -5,34 +5,65 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Nocenite.sol";
 import "./Nocenix.sol";
 
+/**
+ * @title Airdrop
+ * @dev Time-based airdrop system for distributing NCX tokens
+ * @notice Distributes NCX tokens weekly based on NCT holdings with decreasing rewards over time
+ */
 contract Airdrop is Ownable {
+    /// @dev Nocenite token contract
     Nocenite public nocenite;
+    /// @dev Nocenix token contract
     Nocenix public nocenix;
     
+    /// @dev Timestamp when contract was deployed
     uint256 public immutable deploymentTime;
+    /// @dev Duration of one week in seconds
     uint256 public constant WEEK_DURATION = 7 days;
+    /// @dev Duration of one year in seconds
     uint256 public constant YEAR_DURATION = 365 days;
     
-    // Airdrop tracking
+    /// @dev Tracks which weeks have had airdrops executed
     mapping(uint256 => bool) public weeklyAirdropExecuted;
+    /// @dev Total number of airdrops executed
     uint256 public totalAirdropsExecuted;
     
+    /// @dev Emitted when a weekly airdrop is executed
     event AirdropExecuted(uint256 indexed weekNumber, uint256 totalAmount, uint256 recipientCount);
     
+    /**
+     * @dev Creates the airdrop contract
+     * @param _nocenite Address of the Nocenite token contract
+     * @param _nocenix Address of the Nocenix token contract
+     * @param initialOwner Address that will own the contract
+     */
     constructor(address _nocenite, address _nocenix, address initialOwner) Ownable(initialOwner) {
         nocenite = Nocenite(_nocenite);
         nocenix = Nocenix(_nocenix);
         deploymentTime = block.timestamp;
     }
     
+    /**
+     * @dev Gets the current week number since deployment
+     * @return Current week number (0-based)
+     */
     function getCurrentWeek() public view returns (uint256) {
         return (block.timestamp - deploymentTime) / WEEK_DURATION;
     }
     
+    /**
+     * @dev Gets the current year since deployment
+     * @return Current year number (0-based)
+     */
     function getCurrentYear() public view returns (uint256) {
         return (block.timestamp - deploymentTime) / YEAR_DURATION;
     }
     
+    /**
+     * @dev Gets the weekly reward amount based on current year
+     * @return Weekly NCX reward amount with decreasing schedule
+     * @notice Year 1: 1M NCX, Year 2: 750K NCX, Year 3: 500K NCX, Year 4: 250K NCX, Year 5+: 100K NCX
+     */
     function getWeeklyRewardAmount() public view returns (uint256) {
         uint256 year = getCurrentYear();
         
@@ -44,6 +75,12 @@ contract Airdrop is Ownable {
         return 100_000 * 10**18; // Year 5+: 100K NCX minimum
     }
     
+    /**
+     * @dev Executes weekly airdrop to specified recipients
+     * @param recipients Array of addresses to receive airdrop
+     * @notice Distributes NCX proportionally based on NCT holdings
+     * @notice Can only be executed once per week
+     */
     function executeWeeklyAirdrop(address[] calldata recipients) external onlyOwner {
         uint256 currentWeek = getCurrentWeek();
         require(!weeklyAirdropExecuted[currentWeek], "Airdrop already executed this week");
@@ -71,6 +108,14 @@ contract Airdrop is Ownable {
         emit AirdropExecuted(currentWeek, weeklyReward, recipientCount);
     }
     
+    /**
+     * @dev Gets comprehensive airdrop information
+     * @return currentWeek Current week number
+     * @return currentYear Current year number
+     * @return weeklyReward Current weekly reward amount
+     * @return weekExecuted Whether current week's airdrop has been executed
+     * @return totalExecuted Total number of airdrops executed
+     */
     function getAirdropInfo() external view returns (
         uint256 currentWeek,
         uint256 currentYear, 
