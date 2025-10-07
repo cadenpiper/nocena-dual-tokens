@@ -6,17 +6,19 @@ import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, Typed
   
 
   export interface AirdropInterface extends Interface {
-    getFunction(nameOrSignature: "WEEK_DURATION" | "YEAR_DURATION" | "deploymentTime" | "executeWeeklyAirdrop" | "getAirdropInfo" | "getCurrentWeek" | "getCurrentYear" | "getWeeklyRewardAmount" | "nocenite" | "nocenix" | "owner" | "renounceOwnership" | "totalAirdropsExecuted" | "transferOwnership" | "weeklyAirdropExecuted"): FunctionFragment;
+    getFunction(nameOrSignature: "EXECUTOR_REWARD_PERCENTAGE" | "WEEK_DURATION" | "YEAR_DURATION" | "deploymentTime" | "executeWeeklyAirdrop" | "getAirdropInfo" | "getCurrentWeek" | "getCurrentYear" | "getExecutorReward" | "getWeeklyRewardAmount" | "nocenite" | "nocenix" | "owner" | "renounceOwnership" | "totalAirdropsExecuted" | "transferOwnership" | "weeklyAirdropExecuted"): FunctionFragment;
 
     getEvent(nameOrSignatureOrTopic: "AirdropExecuted" | "OwnershipTransferred"): EventFragment;
 
-    encodeFunctionData(functionFragment: 'WEEK_DURATION', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'EXECUTOR_REWARD_PERCENTAGE', values?: undefined): string;
+encodeFunctionData(functionFragment: 'WEEK_DURATION', values?: undefined): string;
 encodeFunctionData(functionFragment: 'YEAR_DURATION', values?: undefined): string;
 encodeFunctionData(functionFragment: 'deploymentTime', values?: undefined): string;
 encodeFunctionData(functionFragment: 'executeWeeklyAirdrop', values: [AddressLike[]]): string;
 encodeFunctionData(functionFragment: 'getAirdropInfo', values?: undefined): string;
 encodeFunctionData(functionFragment: 'getCurrentWeek', values?: undefined): string;
 encodeFunctionData(functionFragment: 'getCurrentYear', values?: undefined): string;
+encodeFunctionData(functionFragment: 'getExecutorReward', values?: undefined): string;
 encodeFunctionData(functionFragment: 'getWeeklyRewardAmount', values?: undefined): string;
 encodeFunctionData(functionFragment: 'nocenite', values?: undefined): string;
 encodeFunctionData(functionFragment: 'nocenix', values?: undefined): string;
@@ -26,13 +28,15 @@ encodeFunctionData(functionFragment: 'totalAirdropsExecuted', values?: undefined
 encodeFunctionData(functionFragment: 'transferOwnership', values: [AddressLike]): string;
 encodeFunctionData(functionFragment: 'weeklyAirdropExecuted', values: [BigNumberish]): string;
 
-    decodeFunctionResult(functionFragment: 'WEEK_DURATION', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'EXECUTOR_REWARD_PERCENTAGE', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'WEEK_DURATION', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'YEAR_DURATION', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'deploymentTime', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'executeWeeklyAirdrop', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getAirdropInfo', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getCurrentWeek', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getCurrentYear', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'getExecutorReward', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getWeeklyRewardAmount', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'nocenite', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'nocenix', data: BytesLike): Result;
@@ -45,9 +49,9 @@ decodeFunctionResult(functionFragment: 'weeklyAirdropExecuted', data: BytesLike)
 
   
     export namespace AirdropExecutedEvent {
-      export type InputTuple = [weekNumber: BigNumberish, totalAmount: BigNumberish, recipientCount: BigNumberish];
-      export type OutputTuple = [weekNumber: bigint, totalAmount: bigint, recipientCount: bigint];
-      export interface OutputObject {weekNumber: bigint, totalAmount: bigint, recipientCount: bigint };
+      export type InputTuple = [weekNumber: BigNumberish, totalAmount: BigNumberish, recipientCount: BigNumberish, executor: AddressLike, executorReward: BigNumberish];
+      export type OutputTuple = [weekNumber: bigint, totalAmount: bigint, recipientCount: bigint, executor: string, executorReward: bigint];
+      export interface OutputObject {weekNumber: bigint, totalAmount: bigint, recipientCount: bigint, executor: string, executorReward: bigint };
       export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
       export type Filter = TypedDeferredTopicFilter<Event>
       export type Log = TypedEventLog<Event>
@@ -102,6 +106,14 @@ decodeFunctionResult(functionFragment: 'weeklyAirdropExecuted', data: BytesLike)
 
     
     
+    EXECUTOR_REWARD_PERCENTAGE: TypedContractMethod<
+      [],
+      [bigint],
+      'view'
+    >
+    
+
+    
     WEEK_DURATION: TypedContractMethod<
       [],
       [bigint],
@@ -151,6 +163,14 @@ decodeFunctionResult(functionFragment: 'weeklyAirdropExecuted', data: BytesLike)
 
     
     getCurrentYear: TypedContractMethod<
+      [],
+      [bigint],
+      'view'
+    >
+    
+
+    
+    getExecutorReward: TypedContractMethod<
       [],
       [bigint],
       'view'
@@ -224,7 +244,12 @@ decodeFunctionResult(functionFragment: 'weeklyAirdropExecuted', data: BytesLike)
 
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
 
-    getFunction(nameOrSignature: 'WEEK_DURATION'): TypedContractMethod<
+    getFunction(nameOrSignature: 'EXECUTOR_REWARD_PERCENTAGE'): TypedContractMethod<
+      [],
+      [bigint],
+      'view'
+    >;
+getFunction(nameOrSignature: 'WEEK_DURATION'): TypedContractMethod<
       [],
       [bigint],
       'view'
@@ -255,6 +280,11 @@ getFunction(nameOrSignature: 'getCurrentWeek'): TypedContractMethod<
       'view'
     >;
 getFunction(nameOrSignature: 'getCurrentYear'): TypedContractMethod<
+      [],
+      [bigint],
+      'view'
+    >;
+getFunction(nameOrSignature: 'getExecutorReward'): TypedContractMethod<
       [],
       [bigint],
       'view'
@@ -305,7 +335,7 @@ getEvent(key: 'OwnershipTransferred'): TypedContractEvent<OwnershipTransferredEv
 
     filters: {
       
-      'AirdropExecuted(uint256,uint256,uint256)': TypedContractEvent<AirdropExecutedEvent.InputTuple, AirdropExecutedEvent.OutputTuple, AirdropExecutedEvent.OutputObject>;
+      'AirdropExecuted(uint256,uint256,uint256,address,uint256)': TypedContractEvent<AirdropExecutedEvent.InputTuple, AirdropExecutedEvent.OutputTuple, AirdropExecutedEvent.OutputObject>;
       AirdropExecuted: TypedContractEvent<AirdropExecutedEvent.InputTuple, AirdropExecutedEvent.OutputTuple, AirdropExecutedEvent.OutputObject>;
     
 

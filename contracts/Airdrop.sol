@@ -7,7 +7,7 @@ import "./Nocenix.sol";
 
 /**
  * @title Airdrop
- * @dev Time-based airdrop system for distributing NCX tokens
+ * @dev Time-based airdrop system for distributing NCX tokens with incentivized execution
  * @notice Distributes NCX tokens weekly based on NCT holdings with decreasing rewards over time
  */
 contract Airdrop is Ownable {
@@ -22,6 +22,8 @@ contract Airdrop is Ownable {
     uint256 public constant WEEK_DURATION = 7 days;
     /// @dev Duration of one year in seconds
     uint256 public constant YEAR_DURATION = 365 days;
+    /// @dev Executor reward amount (0.1% of weekly reward)
+    uint256 public constant EXECUTOR_REWARD_PERCENTAGE = 1000; // 0.1% = 1000/1000000
     
     /// @dev Tracks which weeks have had airdrops executed
     mapping(uint256 => bool) public weeklyAirdropExecuted;
@@ -29,7 +31,7 @@ contract Airdrop is Ownable {
     uint256 public totalAirdropsExecuted;
     
     /// @dev Emitted when a weekly airdrop is executed
-    event AirdropExecuted(uint256 indexed weekNumber, uint256 totalAmount, uint256 recipientCount);
+    event AirdropExecuted(uint256 indexed weekNumber, uint256 totalAmount, uint256 recipientCount, address executor, uint256 executorReward);
     
     /**
      * @dev Creates the airdrop contract
@@ -76,20 +78,24 @@ contract Airdrop is Ownable {
     }
     
     /**
-     * @dev Executes weekly airdrop to specified recipients
+     * @dev Executes weekly airdrop to specified recipients - anyone can execute
      * @param recipients Array of addresses to receive airdrop
      * @notice Distributes NCX proportionally based on NCT holdings
      * @notice Can only be executed once per week
+     * @notice Executor receives a small reward for running the airdrop
      */
-    function executeWeeklyAirdrop(address[] calldata recipients) external onlyOwner {
+    function executeWeeklyAirdrop(address[] calldata recipients) external {
         uint256 currentWeek = getCurrentWeek();
         require(!weeklyAirdropExecuted[currentWeek], "Airdrop already executed this week");
+        require(recipients.length > 0, "No recipients provided");
+        require(recipients.length <= 100, "Too many recipients in single batch");
         
         uint256 weeklyReward = getWeeklyRewardAmount();
         uint256 totalNCT = nocenite.totalSupply();
         require(totalNCT > 0, "No NCT tokens exist");
         
         uint256 recipientCount = 0;
+        uint256 totalDistributed = 0;
         
         for (uint256 i = 0; i < recipients.length; i++) {
             address recipient = recipients[i];
@@ -97,15 +103,24 @@ contract Airdrop is Ownable {
             
             if (nctBalance > 0) {
                 uint256 ncxAmount = (nctBalance * weeklyReward) / totalNCT;
-                nocenix.mint(recipient, ncxAmount);
-                recipientCount++;
+                if (ncxAmount > 0) {
+                    nocenix.mint(recipient, ncxAmount);
+                    totalDistributed += ncxAmount;
+                    recipientCount++;
+                }
             }
+        }
+        
+        // Calculate and mint executor reward (0.1% of weekly reward)
+        uint256 executorReward = (weeklyReward * EXECUTOR_REWARD_PERCENTAGE) / 1000000;
+        if (executorReward > 0) {
+            nocenix.mint(msg.sender, executorReward);
         }
         
         weeklyAirdropExecuted[currentWeek] = true;
         totalAirdropsExecuted++;
         
-        emit AirdropExecuted(currentWeek, weeklyReward, recipientCount);
+        emit AirdropExecuted(currentWeek, totalDistributed, recipientCount, msg.sender, executorReward);
     }
     
     /**
@@ -128,5 +143,14 @@ contract Airdrop is Ownable {
         weeklyReward = getWeeklyRewardAmount();
         weekExecuted = weeklyAirdropExecuted[currentWeek];
         totalExecuted = totalAirdropsExecuted;
+    }
+
+    /**
+     * @dev Calculates the executor reward for the current week
+     * @return Executor reward amount in NCX tokens
+     */
+    function getExecutorReward() external view returns (uint256) {
+        uint256 weeklyReward = getWeeklyRewardAmount();
+        return (weeklyReward * EXECUTOR_REWARD_PERCENTAGE) / 1000000;
     }
 }
